@@ -1,0 +1,5 @@
+Dataset: https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales
+
+Obs: O conjunto de dados "Superstore Sales" é uma coleção abrangente e versátil que fornece informações
+valiosas sobre vendas, comportamento do cliente e desempenho do produto. Este conjunto de dados oferece
+um recurso rico para análises aprofundadas.
