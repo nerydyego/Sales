@@ -57,3 +57,6 @@ htmlcov/
 # Build artifacts
 build/
 dist/
+
+# hipotese
+/hipoteses/
