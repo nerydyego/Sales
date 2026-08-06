@@ -3,6 +3,9 @@
 ## Resumo do projeto
 Este projeto tem como objetivo realizar uma análise exploratória do dataset de vendas, com foco em compreender o comportamento de vendas, lucro, clientes, categorias, regiões e produtos. A análise é conduzida principalmente em um notebook principal, com funções auxiliares organizadas em módulos de pré-processamento e visualização.
 
+## Dataset
+O conjunto de dados utilizado neste projeto é o Superstore Sales, disponível em: https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales/data
+
 ## O que vem sendo executado
 - Carregamento e exploração do dataset de vendas a partir da pasta de dados brutos.
 - Limpeza e transformação de colunas, incluindo conversão de datas para o formato adequado.
