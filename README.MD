@@ -1,44 +1,80 @@
-# Projeto de Análise de Vendas
+# Análise de Vendas Superstore
 
-## Resumo do projeto
-Este projeto tem como objetivo realizar uma análise exploratória do dataset de vendas, com foco em compreender o comportamento de vendas, lucro, clientes, categorias, regiões e produtos. A análise é conduzida principalmente em um notebook principal, com funções auxiliares organizadas em módulos de pré-processamento e visualização.
+## Visão geral
+Projeto de análise de dados e machine learning desenvolvido com o conjunto **Superstore Sales**. O trabalho explora o desempenho de vendas e lucros por região, categoria, produto, cliente e período, além de iniciar a construção de modelos para estimar o lucro de uma transação.
 
-## Dataset
-O conjunto de dados utilizado neste projeto é o Superstore Sales, disponível em: https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales/data
+O projeto está organizado em notebooks para exploração e experimentação, com funções reutilizáveis separadas em módulos Python dentro de `src/`.
 
-## O que vem sendo executado
-- Carregamento e exploração do dataset de vendas a partir da pasta de dados brutos.
-- Limpeza e transformação de colunas, incluindo conversão de datas para o formato adequado.
-- Geração de gráficos e visualizações para apoiar a interpretação dos resultados.
-- Organização de hipóteses de negócio e material visual para a comunicação dos insights.
+## Objetivos
+- Investigar a qualidade, a distribuição e as relações entre as variáveis do conjunto de dados.
+- Explorar padrões comerciais relacionados a faturamento, lucro, clientes, produtos, regiões e sazonalidade.
+- Preparar variáveis e avaliar modelos de regressão para prever `Profit` (lucro).
+- Registrar hipóteses e métricas para orientar as próximas etapas da análise.
 
-## Estrutura do projeto
-- data/raw/: dados brutos utilizados no estudo.
-- data/processed/: dados já tratados ou preparados para análise.
-- notebook/analise.ipynb: notebook principal com a análise exploratória.
-- src/preprocessing/preprocessing.py: funções para preparação e transformação dos dados.
-- src/visualizacao/view.py: funções para criação de visualizações.
-- hipoteses/: arquivo com hipóteses e direcionamentos de análise.
-- image/: imagens e gráficos gerados durante o projeto.
-- pyproject.toml: configuração do projeto e dependências.
-- requirements.txt: dependências Python do projeto.
+## Dados
+O conjunto utilizado é o [Superstore Sales, disponível no Kaggle](https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales/data). Os arquivos locais estão em `data/raw/`; os notebooks leem principalmente `Superstore.csv`. Há também uma versão Excel do conjunto nessa pasta.
 
-## Como replicar o projeto
-1. Crie um ambiente virtual em Python 3.11.
-2. Instale as dependências:
-   - pip install -r requirements.txt
-   - pip install -e .
-3. Para trabalhar com notebooks, instale também os extras de notebook:
-   - pip install -e .[notebook]
-4. Abra o notebook em notebook/analise.ipynb e execute as células em ordem.
+## Notebooks
+- [`notebook/analise.ipynb`](notebook/analise.ipynb): análise exploratória, estatística descritiva, identificação de valores extremos, visualizações comerciais e criação de variáveis temporais, como mês, ano, trimestre, dia da semana e tempo de entrega.
+- [`notebook/ml.ipynb`](notebook/ml.ipynb): experimento de regressão para prever `Profit`, comparar Regressão Linear e Árvore de Decisão e avaliar as previsões.
 
-## Dependências principais
-- pandas
-- numpy
-- matplotlib
-- seaborn
-- scikit-learn
-- kaggle
+### Experimento de machine learning
+O alvo é `Profit`. Como preditoras, o experimento usa modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. Os dados são divididos em treino e teste na proporção 80/20, com `random_state=42`. As variáveis categóricas passam por One-Hot Encoding dentro de um `ColumnTransformer` e de pipelines do scikit-learn.
 
-## Observações
-O projeto assume que o arquivo principal do dataset está disponível em data/raw/. A estrutura atual está organizada para permitir evolução futura para dashboards, modelos preditivos ou automação de relatórios.
+Resultados registrados no notebook:
+
+| Modelo | Conjunto | MAE | RMSE | R² |
+| --- | --- | ---: | ---: | ---: |
+| Regressão Linear | Teste | 67,76 | 282,51 | -0,6461 |
+| Árvore de Decisão | Treino | 0,06 | 0,95 | 0,99998 |
+| Árvore de Decisão | Teste | 34,61 | 285,94 | -0,6863 |
+
+Esses números são resultados preliminares salvos no notebook, não uma validação de modelo para uso operacional. O R² negativo no teste indica que os modelos ainda não superam uma previsão de referência baseada na média do alvo. A diferença entre o desempenho da Árvore de Decisão no treino e no teste é compatível com sobreajuste. A próxima etapa é investigar a generalização com validação cruzada, regularização e comparação com um modelo de referência.
+
+## Módulos Python
+- `src/preprocessing/preprocessing.py`: conversão de colunas de data para `datetime`, com opções de formato, tratamento de erros e ordem dia/mês.
+- `src/visualizacao/view.py`: função reutilizável para gerar boxplots de uma ou mais colunas.
+- `src/visualizacao/resultado.py`: cálculo de métricas de regressão, incluindo MAE, MSE, RMSE, R², média, mediana e desvio padrão.
+- `src/modelagem/metricas.py`: registro das métricas de modelos em um DataFrame comparativo.
+
+## Estrutura
+```text
+data/
+   processed/
+   raw/
+      Superstore.csv
+      Superstore.xlsx
+hipoteses/
+   atepas.txt
+   dados.txt
+   etapas.txt
+   hipoteses.txt
+notebook/
+   analise.ipynb
+   ml.ipynb
+src/
+   modelagem/metricas.py
+   preprocessing/preprocessing.py
+   visualizacao/resultado.py
+   visualizacao/view.py
+image/
+pyproject.toml
+requirements.txt
+```
+
+## Instalação e execução
+Requisitos: Python 3.11 ou superior. No PowerShell, na pasta do projeto:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
+python -m pip install jupyterlab ipykernel kagglehub charset-normalizer
+```
+
+Abra a pasta no VS Code ou inicie o JupyterLab e execute as células do notebook desejado em ordem. O notebook de análise contém uma célula para baixar o conjunto pelo KaggleHub; como o CSV também está disponível em `data/raw/`, essa etapa pode ser ignorada quando o arquivo local já estiver presente.
+
+## Tecnologias
+Python, pandas, NumPy, scikit-learn, Matplotlib, Seaborn e Jupyter.
