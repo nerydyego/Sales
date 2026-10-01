@@ -16,20 +16,36 @@ O conjunto utilizado é o [Superstore Sales, disponível no Kaggle](https://www.
 
 ## Notebooks
 - [`notebook/analise.ipynb`](notebook/analise.ipynb): análise exploratória, estatística descritiva, identificação de valores extremos, visualizações comerciais e criação de variáveis temporais, como mês, ano, trimestre, dia da semana e tempo de entrega.
-- [`notebook/ml.ipynb`](notebook/ml.ipynb): experimento de regressão para prever `Profit`, comparar Regressão Linear e Árvore de Decisão e avaliar as previsões.
+- [`notebook/ml.ipynb`](notebook/ml.ipynb): preparação de dados, treinamento de modelos de regressão para prever `Profit`, avaliação em holdout e validação cruzada para comparar profundidades da Árvore de Decisão.
 
-### Experimento de machine learning
-O alvo é `Profit`. Como preditoras, o experimento usa modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. Os dados são divididos em treino e teste na proporção 80/20, com `random_state=42`. As variáveis categóricas passam por One-Hot Encoding dentro de um `ColumnTransformer` e de pipelines do scikit-learn.
+### Modelagem e avaliação
+O objetivo do experimento é estimar o lucro (`Profit`) de uma transação. As variáveis preditoras são modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. O notebook separa 20% dos dados para teste (`random_state=42`) e processa as variáveis categóricas com One-Hot Encoding, usando `ColumnTransformer` e `Pipeline` do scikit-learn.
 
-Resultados registrados no notebook:
+Foram avaliados Regressão Linear e Árvore de Decisão. O notebook também compara árvores com profundidades máximas de 2, 3, 5, 7, 10, 15 e 20 e utiliza validação cruzada de cinco folds no conjunto de treino. As métricas incluem MAE, RMSE e R².
+
+**Resultados no holdout 80/20**
 
 | Modelo | Conjunto | MAE | RMSE | R² |
 | --- | --- | ---: | ---: | ---: |
 | Regressão Linear | Teste | 67,76 | 282,51 | -0,6461 |
-| Árvore de Decisão | Treino | 0,06 | 0,95 | 0,99998 |
-| Árvore de Decisão | Teste | 34,61 | 285,94 | -0,6863 |
+| Árvore de Decisão sem limite de profundidade | Treino | 0,06 | 0,95 | 0,99998 |
+| Árvore de Decisão sem limite de profundidade | Teste | 34,61 | 285,94 | -0,6863 |
 
-Esses números são resultados preliminares salvos no notebook, não uma validação de modelo para uso operacional. O R² negativo no teste indica que os modelos ainda não superam uma previsão de referência baseada na média do alvo. A diferença entre o desempenho da Árvore de Decisão no treino e no teste é compatível com sobreajuste. A próxima etapa é investigar a generalização com validação cruzada, regularização e comparação com um modelo de referência.
+**Validação cruzada da Árvore de Decisão por profundidade**
+
+Valores abaixo são médias dos cinco folds no conjunto de treino; `R² desvio` indica o desvio-padrão do R² entre folds.
+
+| Profundidade máxima | MAE validação | RMSE validação | R² validação | R² desvio |
+| ---: | ---: | ---: | ---: | ---: |
+| 2 | 54,50 | 176,68 | 0,3360 | 0,3058 |
+| 3 | 59,05 | 169,81 | 0,4224 | 0,1495 |
+| 5 | 42,82 | 138,77 | 0,5844 | 0,2063 |
+| 7 | 32,30 | 131,64 | 0,6641 | 0,1334 |
+| 10 | 25,88 | 130,11 | 0,6618 | 0,1800 |
+| 15 | 23,80 | 126,67 | 0,6660 | 0,2226 |
+| 20 | 22,87 | 108,38 | 0,7346 | 0,2185 |
+
+Na validação cruzada, a profundidade 20 obteve o maior R² médio entre as opções avaliadas, embora haja variação entre folds. Em contrapartida, todas as profundidades avaliadas no holdout tiveram R² negativo no teste (de -0,9541 a -0,6785), assim como a Regressão Linear e a árvore sem limite. Além disso, como o notebook consultou `X_test` ao comparar profundidades, esse conjunto não é mais uma avaliação final independente para a escolha do modelo. A árvore praticamente perfeita no treino também evidencia risco de sobreajuste. Os resultados são exploratórios; para uma estimativa final, será necessário manter um conjunto de teste realmente intocado ou adotar uma avaliação aninhada de validação cruzada. Nenhum modelo deve ser considerado validado para uso operacional neste estágio.
 
 ## Módulos Python
 - `src/preprocessing/preprocessing.py`: conversão de colunas de data para `datetime`, com opções de formato, tratamento de erros e ordem dia/mês.
