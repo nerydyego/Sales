@@ -16,12 +16,12 @@ O conjunto utilizado é o [Superstore Sales, disponível no Kaggle](https://www.
 
 ## Notebooks
 - [`notebook/analise.ipynb`](notebook/analise.ipynb): análise exploratória, estatística descritiva, identificação de valores extremos, visualizações comerciais e criação de variáveis temporais, como mês, ano, trimestre, dia da semana e tempo de entrega.
-- [`notebook/ml.ipynb`](notebook/ml.ipynb): preparação de dados, treinamento de modelos de regressão para prever `Profit`, avaliação em holdout e validação cruzada para comparar profundidades da Árvore de Decisão.
+- [`notebook/ml.ipynb`](notebook/ml.ipynb): preparação de dados, treinamento e avaliação exploratória de modelos de regressão para prever `Profit`, incluindo Regressão Linear, Árvore de Decisão e Random Forest.
 
 ### Modelagem e avaliação
-O objetivo do experimento é estimar o lucro (`Profit`) de uma transação. As variáveis preditoras são modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. O notebook separa 20% dos dados para teste (`random_state=42`) e processa as variáveis categóricas com One-Hot Encoding, usando `ColumnTransformer` e `Pipeline` do scikit-learn.
+O objetivo do experimento é estimar o lucro (`Profit`) de uma transação. As variáveis preditoras são modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. O notebook separa 20% dos dados para teste (`random_state=42`) e processa as variáveis categóricas com One-Hot Encoding, usando `ColumnTransformer` e `Pipeline` do scikit-learn. As variáveis numéricas (`Sales`, `Quantity` e `Discount`) são mantidas sem transformação adicional.
 
-Foram avaliados Regressão Linear e Árvore de Decisão. O notebook também compara árvores com profundidades máximas de 2, 3, 5, 7, 10, 15 e 20 e utiliza validação cruzada de cinco folds no conjunto de treino. As métricas incluem MAE, RMSE e R².
+Foram avaliados Regressão Linear, Árvore de Decisão e Random Forest. Para a Árvore de Decisão, o notebook compara profundidades máximas de 2, 3, 5, 7, 10, 15 e 20 usando validação cruzada de cinco folds no conjunto de treino. As métricas incluem MAE, RMSE e R².
 
 **Resultados no holdout 80/20**
 
@@ -46,6 +46,25 @@ Valores abaixo são médias dos cinco folds no conjunto de treino; `R² desvio` 
 | 20 | 22,87 | 108,38 | 0,7346 | 0,2185 |
 
 Na validação cruzada, a profundidade 20 obteve o maior R² médio entre as opções avaliadas, embora haja variação entre folds. Em contrapartida, todas as profundidades avaliadas no holdout tiveram R² negativo no teste (de -0,9541 a -0,6785), assim como a Regressão Linear e a árvore sem limite. Além disso, como o notebook consultou `X_test` ao comparar profundidades, esse conjunto não é mais uma avaliação final independente para a escolha do modelo. A árvore praticamente perfeita no treino também evidencia risco de sobreajuste. Os resultados são exploratórios; para uma estimativa final, será necessário manter um conjunto de teste realmente intocado ou adotar uma avaliação aninhada de validação cruzada. Nenhum modelo deve ser considerado validado para uso operacional neste estágio.
+
+### Random Forest
+O Random Forest foi implementado em um `Pipeline` com o mesmo pré-processamento categórico e `RandomForestRegressor` (`random_state=42`, `n_jobs=-1`). O notebook primeiro avaliou a configuração inicial com validação cruzada de cinco folds e, em seguida, otimizou os hiperparâmetros com `GridSearchCV`, usando RMSE negativo como critério de seleção. A busca examinou 36 combinações no conjunto de treino:
+
+| Hiperparâmetro | Valores avaliados |
+| --- | --- |
+| `n_estimators` | 100, 200 |
+| `max_depth` | 10, 20, sem limite (`None`) |
+| `min_samples_split` | 2, 5 |
+| `min_samples_leaf` | 1, 2, 5 |
+
+A configuração selecionada foi `n_estimators=200`, `max_depth=None`, `min_samples_split=2` e `min_samples_leaf=1`. A tabela mostra a média e o desvio-padrão entre os cinco folds; MAE e RMSE estão nas mesmas unidades de `Profit`.
+
+| Random Forest | MAE validação | RMSE validação | R² validação |
+| --- | ---: | ---: | ---: |
+| Configuração inicial | 19,57 ± 2,24 | 111,97 ± 48,70 | 0,7147 ± 0,2746 |
+| Após GridSearchCV | 19,47 ± 2,23 | 110,65 ± 49,00 | 0,7191 ± 0,2742 |
+
+A busca encontrou RMSE médio de validação de 110,65. A melhora sobre a configuração inicial foi pequena, e o desvio-padrão do RMSE e do R² entre folds indica variação considerável conforme a partição dos dados. O notebook não calcula métricas do Random Forest no conjunto de teste. Além disso, a validação cruzada reportada após a busca usa os mesmos dados de treino que orientaram a escolha dos hiperparâmetros, podendo apresentar estimativa otimista. Como o holdout também foi consultado durante experimentos com a Árvore de Decisão, os resultados não constituem uma comparação final independente entre modelos. Uma avaliação conclusiva requer teste intocado ou validação cruzada aninhada.
 
 ## Módulos Python
 - `src/preprocessing/preprocessing.py`: conversão de colunas de data para `datetime`, com opções de formato, tratamento de erros e ordem dia/mês.
