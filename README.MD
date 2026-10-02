@@ -1,104 +1,121 @@
-# Análise de Vendas Superstore
+# Sales Dataset — Análise exploratória e modelagem de lucro
 
 ## Visão geral
-Projeto de análise de dados e machine learning desenvolvido com o conjunto **Superstore Sales**. O trabalho explora o desempenho de vendas e lucros por região, categoria, produto, cliente e período, além de iniciar a construção de modelos para estimar o lucro de uma transação.
+Este projeto tem como objetivo explorar o conjunto de dados de vendas da empresa Superstore e desenvolver um fluxo inicial de modelagem preditiva para estimar o lucro de uma transação. A análise combina exploração estatística, visualização de padrões comerciais e avaliação de modelos de regressão.
 
-O projeto está organizado em notebooks para exploração e experimentação, com funções reutilizáveis separadas em módulos Python dentro de `src/`.
+O repositório foi estruturado para apoiar a etapa de pesquisa e análise, separando a lógica de preprocessamento, visualização e comparação de métricas em módulos reutilizáveis dentro da pasta `src/`.
 
 ## Objetivos
-- Investigar a qualidade, a distribuição e as relações entre as variáveis do conjunto de dados.
-- Explorar padrões comerciais relacionados a faturamento, lucro, clientes, produtos, regiões e sazonalidade.
-- Preparar variáveis e avaliar modelos de regressão para prever `Profit` (lucro).
-- Registrar hipóteses e métricas para orientar as próximas etapas da análise.
+- Compreender a distribuição e a qualidade dos dados.
+- Identificar fatores que influenciam faturamento e lucro.
+- Explorar padrões por região, categoria, segmento, canal de venda e período temporal.
+- Preparar variáveis para treinamento de modelos preditivos.
+- Avaliar modelos de regressão para prever a variável alvo `Profit`.
+- Registrar hipóteses, métricas e observações para orientar etapas futuras.
 
-## Dados
-O conjunto utilizado é o [Superstore Sales, disponível no Kaggle](https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales/data). Os arquivos locais estão em `data/raw/`; os notebooks leem principalmente `Superstore.csv`. Há também uma versão Excel do conjunto nessa pasta.
+## Dataset
+O conjunto utilizado é o [Superstore Sales](https://www.kaggle.com/datasets/ishanshrivastava28/superstore-sales/data), disponibilizado publicamente no Kaggle. Os dados estão armazenados em `data/raw/`, com foco principal no arquivo `Superstore.csv`.
 
-## Notebooks
-- [`notebook/analise.ipynb`](notebook/analise.ipynb): análise exploratória, estatística descritiva, identificação de valores extremos, visualizações comerciais e criação de variáveis temporais, como mês, ano, trimestre, dia da semana e tempo de entrega.
-- [`notebook/ml.ipynb`](notebook/ml.ipynb): preparação de dados, treinamento e avaliação exploratória de modelos de regressão para prever `Profit`, incluindo Regressão Linear, Árvore de Decisão e Random Forest.
+A base contém informações comerciais como:
+- região e segmento de clientes;
+- categoria e subcategoria de produtos;
+- datas de pedido e entrega;
+- quantidade, vendas, descontos e lucro;
+- canal de vendas e modalidade de envio.
 
-### Modelagem e avaliação
-O objetivo do experimento é estimar o lucro (`Profit`) de uma transação. As variáveis preditoras são modalidade de envio, segmento, região, categoria, subcategoria, vendas, quantidade e desconto. O notebook separa 20% dos dados para teste (`random_state=42`) e processa as variáveis categóricas com One-Hot Encoding, usando `ColumnTransformer` e `Pipeline` do scikit-learn. As variáveis numéricas (`Sales`, `Quantity` e `Discount`) são mantidas sem transformação adicional.
-
-Foram avaliados Regressão Linear, Árvore de Decisão e Random Forest. Para a Árvore de Decisão, o notebook compara profundidades máximas de 2, 3, 5, 7, 10, 15 e 20 usando validação cruzada de cinco folds no conjunto de treino. As métricas incluem MAE, RMSE e R².
-
-**Resultados no holdout 80/20**
-
-| Modelo | Conjunto | MAE | RMSE | R² |
-| --- | --- | ---: | ---: | ---: |
-| Regressão Linear | Teste | 67,76 | 282,51 | -0,6461 |
-| Árvore de Decisão sem limite de profundidade | Treino | 0,06 | 0,95 | 0,99998 |
-| Árvore de Decisão sem limite de profundidade | Teste | 34,61 | 285,94 | -0,6863 |
-
-**Validação cruzada da Árvore de Decisão por profundidade**
-
-Valores abaixo são médias dos cinco folds no conjunto de treino; `R² desvio` indica o desvio-padrão do R² entre folds.
-
-| Profundidade máxima | MAE validação | RMSE validação | R² validação | R² desvio |
-| ---: | ---: | ---: | ---: | ---: |
-| 2 | 54,50 | 176,68 | 0,3360 | 0,3058 |
-| 3 | 59,05 | 169,81 | 0,4224 | 0,1495 |
-| 5 | 42,82 | 138,77 | 0,5844 | 0,2063 |
-| 7 | 32,30 | 131,64 | 0,6641 | 0,1334 |
-| 10 | 25,88 | 130,11 | 0,6618 | 0,1800 |
-| 15 | 23,80 | 126,67 | 0,6660 | 0,2226 |
-| 20 | 22,87 | 108,38 | 0,7346 | 0,2185 |
-
-Na validação cruzada, a profundidade 20 obteve o maior R² médio entre as opções avaliadas, embora haja variação entre folds. Em contrapartida, todas as profundidades avaliadas no holdout tiveram R² negativo no teste (de -0,9541 a -0,6785), assim como a Regressão Linear e a árvore sem limite. Além disso, como o notebook consultou `X_test` ao comparar profundidades, esse conjunto não é mais uma avaliação final independente para a escolha do modelo. A árvore praticamente perfeita no treino também evidencia risco de sobreajuste. Os resultados são exploratórios; para uma estimativa final, será necessário manter um conjunto de teste realmente intocado ou adotar uma avaliação aninhada de validação cruzada. Nenhum modelo deve ser considerado validado para uso operacional neste estágio.
-
-### Random Forest
-O Random Forest foi implementado em um `Pipeline` com o mesmo pré-processamento categórico e `RandomForestRegressor` (`random_state=42`, `n_jobs=-1`). O notebook primeiro avaliou a configuração inicial com validação cruzada de cinco folds e, em seguida, otimizou os hiperparâmetros com `GridSearchCV`, usando RMSE negativo como critério de seleção. A busca examinou 36 combinações no conjunto de treino:
-
-| Hiperparâmetro | Valores avaliados |
-| --- | --- |
-| `n_estimators` | 100, 200 |
-| `max_depth` | 10, 20, sem limite (`None`) |
-| `min_samples_split` | 2, 5 |
-| `min_samples_leaf` | 1, 2, 5 |
-
-A configuração selecionada foi `n_estimators=200`, `max_depth=None`, `min_samples_split=2` e `min_samples_leaf=1`. A tabela mostra a média e o desvio-padrão entre os cinco folds; MAE e RMSE estão nas mesmas unidades de `Profit`.
-
-| Random Forest | MAE validação | RMSE validação | R² validação |
-| --- | ---: | ---: | ---: |
-| Configuração inicial | 19,57 ± 2,24 | 111,97 ± 48,70 | 0,7147 ± 0,2746 |
-| Após GridSearchCV | 19,47 ± 2,23 | 110,65 ± 49,00 | 0,7191 ± 0,2742 |
-
-A busca encontrou RMSE médio de validação de 110,65. A melhora sobre a configuração inicial foi pequena, e o desvio-padrão do RMSE e do R² entre folds indica variação considerável conforme a partição dos dados. O notebook não calcula métricas do Random Forest no conjunto de teste. Além disso, a validação cruzada reportada após a busca usa os mesmos dados de treino que orientaram a escolha dos hiperparâmetros, podendo apresentar estimativa otimista. Como o holdout também foi consultado durante experimentos com a Árvore de Decisão, os resultados não constituem uma comparação final independente entre modelos. Uma avaliação conclusiva requer teste intocado ou validação cruzada aninhada.
-
-## Módulos Python
-- `src/preprocessing/preprocessing.py`: conversão de colunas de data para `datetime`, com opções de formato, tratamento de erros e ordem dia/mês.
-- `src/visualizacao/view.py`: função reutilizável para gerar boxplots de uma ou mais colunas.
-- `src/visualizacao/resultado.py`: cálculo de métricas de regressão, incluindo MAE, MSE, RMSE, R², média, mediana e desvio padrão.
-- `src/modelagem/metricas.py`: registro das métricas de modelos em um DataFrame comparativo.
-
-## Estrutura
+## Estrutura do projeto
 ```text
-data/
-   processed/
-   raw/
-      Superstore.csv
-      Superstore.xlsx
-hipoteses/
-   atepas.txt
-   dados.txt
-   etapas.txt
-   hipoteses.txt
-notebook/
-   analise.ipynb
-   ml.ipynb
-src/
-   modelagem/metricas.py
-   preprocessing/preprocessing.py
-   visualizacao/resultado.py
-   visualizacao/view.py
-image/
-pyproject.toml
-requirements.txt
+Sales_dataset/
+├── data/
+│   ├── processed/
+│   └── raw/
+│       └── Superstore.csv
+├── hipoteses/
+│   ├── atepas.txt
+│   ├── dados.txt
+│   ├── etapas.txt
+│   └── hipoteses.txt
+├── image/
+├── notebook/
+│   ├── analise.ipynb
+│   └── ml.ipynb
+├── src/
+│   ├── modelagem/
+│   │   └── metricas.py
+│   ├── preprocessing/
+│   │   └── preprocessing.py
+│   └── visualizacao/
+│       ├── resultado.py
+│       └── view.py
+├── pyproject.toml
+├── requirements.txt
+└── README.md
 ```
 
+## Fluxo de trabalho
+### 1. Exploração e análise exploratória
+O notebook `notebook/analise.ipynb` é responsável por:
+- revisar a integridade dos dados;
+- identificar valores ausentes, outliers e inconsistências;
+- analisar distribuições e correlações;
+- gerar visualizações de negócio;
+- transformar variáveis de tempo em features relevantes;
+- apoiar a formulação de hipóteses sobre desempenho comercial.
+
+### 2. Modelagem preditiva
+O notebook `notebook/ml.ipynb` realiza:
+- preparação dos dados para treinamento;
+- encoding de variáveis categóricas;
+- uso de pipelines com `ColumnTransformer` e `Pipeline` do scikit-learn;
+- comparação entre Regressão Linear, Árvore de Decisão e Random Forest;
+- avaliação por métricas como MAE, RMSE e R²;
+- análise exploratória de hiperparâmetros e validação cruzada.
+
+### 3. Módulos reutilizáveis
+- `src/preprocessing/preprocessing.py`: conversão de colunas de data para `datetime` com suporte a tratamento de erros e formatação.
+- `src/visualizacao/view.py`: geração de boxplots para análise univariada.
+- `src/visualizacao/resultado.py`: cálculo de métricas de regressão.
+- `src/modelagem/metricas.py`: consolidação de resultados de modelos em estrutura tabular.
+
+## Modelagem e avaliação
+A variável-alvo do experimento é `Profit`, e o objetivo é estimar o lucro de uma transação a partir de atributos como:
+- segmento;
+- região;
+- categoria e subcategoria;
+- vendas;
+- quantidade;
+- desconto;
+- modalidade de envio.
+
+Os modelos avaliados incluem:
+- Regressão Linear;
+- Árvore de Decisão;
+- Random Forest.
+
+### Resultados exploratórios
+Os resultados obtidos são úteis para orientar a exploração, mas devem ser interpretados com cautela, especialmente por se tratarem de um estudo inicial. Em vários cenários, o desempenho em treino foi muito bom e o desempenho em teste foi instável, indicando risco de overfitting e necessidade de validação mais robusta.
+
+Em síntese:
+- a árvore de decisão apresentou bons resultados em validação cruzada em algumas profundidades;
+- o Random Forest mostrou desempenho competitivo em validação cruzada;
+- os resultados de holdout indicaram que a generalização ainda precisa ser melhor validada;
+- uma avaliação final mais confiável exigirá conjunto de teste intocado e/ou validação cruzada aninhada.
+
+> Importante: os experimentos atuais são exploratórios e não devem ser considerados prontos para uso operacional sem uma etapa adicional de validação estatística e seleção de modelo.
+
+## Tecnologias
+- Python
+- pandas
+- NumPy
+- scikit-learn
+- Matplotlib
+- Seaborn
+- Jupyter Notebook
+
 ## Instalação e execução
-Requisitos: Python 3.11 ou superior. No PowerShell, na pasta do projeto:
+Requisitos: Python 3.11 ou superior.
+
+No PowerShell, execute:
 
 ```powershell
 python -m venv .venv
@@ -109,7 +126,18 @@ python -m pip install -e .
 python -m pip install jupyterlab ipykernel kagglehub charset-normalizer
 ```
 
-Abra a pasta no VS Code ou inicie o JupyterLab e execute as células do notebook desejado em ordem. O notebook de análise contém uma célula para baixar o conjunto pelo KaggleHub; como o CSV também está disponível em `data/raw/`, essa etapa pode ser ignorada quando o arquivo local já estiver presente.
+Em seguida:
+1. abra a pasta do projeto no VS Code;
+2. inicie o Jupyter ou JupyterLab;
+3. execute os notebooks na ordem desejada;
+4. se o dataset local já estiver presente em `data/raw/`, a etapa de download via KaggleHub pode ser ignorada.
 
-## Tecnologias
-Python, pandas, NumPy, scikit-learn, Matplotlib, Seaborn e Jupyter.
+## Próximos passos sugeridos
+- definir uma divisão final de treino/validação/teste sem vazamento de dados;
+- aplicar engenharia de features mais robusta;
+- comparar modelos com tuning mais sistemático;
+- analisar erros de previsão e segmentação por categoria/cliente/região;
+- preparar um pipeline de produção para automatizar a predição de lucro.
+
+## Observação final
+Este repositório representa uma base sólida para análise exploratória e experimentação inicial com machine learning em dados de vendas. O projeto está bem organizado para continuidade, refinamento metodológico e evolução em direção a um processo mais profissional e orientado à decisão de negócio.
